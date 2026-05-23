@@ -1,17 +1,13 @@
-"use client";
-
-import { Activity, CheckCircle2, Flame, Target } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
-import { AppShell } from "@/components/layout/app-shell";
-import { WidgetGrid } from "@/components/widgets/widget-grid";
-import { KPICards } from "@/components/dashboard/kpi-cards";
-import { TodaySummaryCard } from "@/components/dashboard/today-summary-card";
-import { AIAssistantCard } from "@/components/dashboard/ai-assistant-card";
-import { TasksWidget } from "@/components/dashboard/tasks-widget";
-import { GoalsWidget } from "@/components/dashboard/goals-widget";
-import { FinanceWidget } from "@/components/dashboard/finance-widget";
-import { AutomationWidget } from "@/components/dashboard/automation-widget";
-import { QuickActions } from "@/components/dashboard/quick-actions";
+import {
+  Activity,
+  ArrowUpRight,
+  Brain,
+  CalendarDays,
+  CheckCircle2,
+  CircleDollarSign,
+  Flame,
+  Target,
+} from "lucide-react";
 
 const kpis = [
   { label: "Focus Score", value: "87", delta: "+6%", icon: Activity },
