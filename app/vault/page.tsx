@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/shell/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { AppCard } from "@/components/ui/app-card";
 
 export default function VaultPage() {
