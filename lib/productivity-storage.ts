@@ -17,18 +17,32 @@ export const defaultState: ProductivityState = {
   ],
 };
 
-export function loadState(): ProductivityState {
-  if (typeof window === "undefined") return defaultState;
+function normalizeState(input: ProductivityState): ProductivityState {
+  return {
+    tasks: Array.isArray(input.tasks) ? input.tasks.map((t) => ({ ...t, title: String(t.title || "").trim() })) : [],
+    goals: Array.isArray(input.goals)
+      ? input.goals.map((g) => ({ ...g, progress: Number.isFinite(g.progress) ? Math.max(0, Math.min(100, g.progress)) : 0 }))
+      : defaultState.goals,
+    habits: Array.isArray(input.habits)
+      ? input.habits.map((h) => ({ ...h, streak: Number.isFinite(h.streak) ? Math.max(0, Math.floor(h.streak)) : 0 }))
+      : defaultState.habits,
+  };
+}
+
+export function loadState(): { state: ProductivityState; hadCorruption: boolean } {
+  if (typeof window === "undefined") return { state: defaultState, hadCorruption: false };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultState;
-    return { ...defaultState, ...JSON.parse(raw) };
+    if (!raw) return { state: defaultState, hadCorruption: false };
+    const parsed = JSON.parse(raw) as ProductivityState;
+    return { state: normalizeState({ ...defaultState, ...parsed }), hadCorruption: false };
   } catch {
-    return defaultState;
+    localStorage.removeItem(STORAGE_KEY);
+    return { state: defaultState, hadCorruption: true };
   }
 }
 
 export function saveState(state: ProductivityState) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeState(state)));
 }

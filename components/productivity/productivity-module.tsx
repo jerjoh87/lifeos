@@ -5,18 +5,24 @@ import { CheckCircle2, Flame, Target, Bell } from "lucide-react";
 import { AppCard } from "@/components/ui/app-card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { defaultState, Goal, Habit, loadState, saveState, Task } from "@/lib/productivity-storage";
+import { createId } from "@/lib/id";
 
 export function ProductivityModule() {
   const [tasks, setTasks] = useState<Task[]>(defaultState.tasks);
   const [goals, setGoals] = useState<Goal[]>(defaultState.goals);
   const [habits, setHabits] = useState<Habit[]>(defaultState.habits);
   const [taskTitle, setTaskTitle] = useState("");
+  const [taskError, setTaskError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [storageWarning, setStorageWarning] = useState("");
 
   useEffect(() => {
     const loaded = loadState();
-    setTasks(loaded.tasks);
-    setGoals(loaded.goals);
-    setHabits(loaded.habits);
+    setTasks(loaded.state.tasks);
+    setGoals(loaded.state.goals);
+    setHabits(loaded.state.habits);
+    setStorageWarning(loaded.hadCorruption ? "Stored productivity data was reset due to corruption." : "");
+    setLoading(false);
   }, []);
 
   useEffect(() => saveState({ tasks, goals, habits }), [tasks, goals, habits]);
@@ -30,13 +36,17 @@ export function ProductivityModule() {
   }, [tasks, completed, goals, habits]);
 
   const addTask = () => {
-    if (!taskTitle.trim()) return;
-    setTasks((prev) => [...prev, { id: crypto.randomUUID(), title: taskTitle.trim(), completed: false }]);
+    const trimmed = taskTitle.trim();
+    if (!trimmed) { setTaskError("Task title cannot be empty."); return; }
+    setTaskError("");
+    setTasks((prev) => [...prev, { id: createId("task"), title: trimmed, completed: false }]);
     setTaskTitle("");
   };
 
   return (
     <section className="grid grid-cols-1 gap-4">
+      {loading ? <AppCard><p className="text-sm text-slate-300">Loading productivity data...</p></AppCard> : null}
+      {storageWarning ? <AppCard><p className="text-sm text-amber-300">{storageWarning}</p></AppCard> : null}
       <AppCard>
         <SectionHeader title="Productivity Score" icon={CheckCircle2} />
         <div className="flex items-end justify-between">
@@ -49,9 +59,10 @@ export function ProductivityModule() {
         <AppCard className="lg:col-span-6">
           <SectionHeader title="Tasks" icon={CheckCircle2} />
           <div className="mb-3 flex gap-2">
-            <input value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} placeholder="Add a task" className="h-10 flex-1 rounded-lg border border-white/10 bg-[#0a1020]/70 px-3 text-sm" />
+            <input value={taskTitle} onChange={(e) => { setTaskTitle(e.target.value); if (taskError) setTaskError(""); }} placeholder="Add a task" className="h-10 flex-1 rounded-lg border border-white/10 bg-[#0a1020]/70 px-3 text-sm" />
             <button onClick={addTask} className="rounded-lg bg-blue-500/80 px-3 text-sm">Add</button>
           </div>
+          {taskError ? <p className="mb-2 text-xs text-rose-300">{taskError}</p> : null}
           {tasks.length === 0 ? <p className="rounded-lg border border-dashed border-white/20 p-4 text-sm text-slate-400">No tasks yet. Add your first priority.</p> : (
             <ul className="space-y-2">
               {tasks.map((t) => (

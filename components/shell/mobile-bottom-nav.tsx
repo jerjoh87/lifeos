@@ -16,9 +16,9 @@ export function MobileBottomNav() {
 
   return (
     <>
-      {open ? <button aria-label="Close menu" className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setOpen(false)} /> : null}
+      {open ? <button aria-label="Close More menu" className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setOpen(false)} /> : null}
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#070b13]/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl lg:hidden">
+      <nav aria-label="Primary mobile navigation" className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#070b13]/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl lg:hidden">
         <ul className="grid grid-cols-6 gap-1">
           {primary.map((item) => {
             const Icon = item.icon;
@@ -27,8 +27,9 @@ export function MobileBottomNav() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`flex flex-col items-center justify-center rounded-lg px-1 py-2 text-[11px] ${
-                    active ? "bg-blue-500/20 text-blue-100" : "text-slate-400"
+                  aria-current={active ? "page" : undefined}
+                  className={`flex min-h-11 flex-col items-center justify-center rounded-lg px-1 py-2 text-[11px] ${
+                    active ? "bg-blue-500/20 text-blue-100" : "text-slate-300"
                   }`}
                 >
                   <Icon className="mb-1 h-4 w-4" />
@@ -39,11 +40,14 @@ export function MobileBottomNav() {
           })}
           <li>
             <button
+              type="button"
+              aria-label="Open More menu"
+              aria-haspopup="dialog"
               aria-expanded={open}
               aria-controls="mobile-more-sheet"
               onClick={() => setOpen((v) => !v)}
-              className={`flex w-full flex-col items-center justify-center rounded-lg px-1 py-2 text-[11px] ${
-                open ? "bg-blue-500/20 text-blue-100" : "text-slate-400"
+              className={`flex min-h-11 w-full flex-col items-center justify-center rounded-lg px-1 py-2 text-[11px] ${
+                open ? "bg-blue-500/20 text-blue-100" : "text-slate-300"
               }`}
             >
               <span className="mb-1 text-sm leading-none">•••</span>
@@ -54,8 +58,11 @@ export function MobileBottomNav() {
       </nav>
 
       <section
+        role="dialog"
+        aria-modal="false"
+        aria-label="More navigation routes"
         id="mobile-more-sheet"
-        className={`fixed inset-x-0 bottom-[calc(58px+env(safe-area-inset-bottom))] z-50 mx-2 rounded-2xl border border-white/10 bg-[#0a1120]/95 p-2 backdrop-blur-xl transition ${
+        className={`fixed inset-x-0 bottom-[calc(58px+env(safe-area-inset-bottom))] z-50 mx-2 max-h-[55vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0a1120]/95 p-2 backdrop-blur-xl transition ${
           open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
         } lg:hidden`}
       >
@@ -68,8 +75,9 @@ export function MobileBottomNav() {
                 <Link
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm ${
-                    active ? "bg-blue-500/20 text-blue-100" : "text-slate-300 hover:bg-white/[0.04]"
+                  aria-current={active ? "page" : undefined}
+                  className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm ${
+                    active ? "bg-blue-500/20 text-blue-100" : "text-slate-200 hover:bg-white/[0.04]"
                   }`}
                 >
                   <Icon className="h-4 w-4" />

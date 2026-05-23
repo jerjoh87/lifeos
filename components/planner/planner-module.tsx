@@ -5,6 +5,7 @@ import { CalendarDays, Clock3, Plus, Repeat, Bell, Trash2 } from "lucide-react";
 import { AppCard } from "@/components/ui/app-card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { defaultPlannerState, loadPlannerState, PlannerItem, savePlannerState } from "@/lib/planner-storage";
+import { createId } from "@/lib/id";
 
 const hours = Array.from({ length: 15 }, (_, i) => `${String(i + 6).padStart(2, "0")}:00`);
 
@@ -22,12 +23,17 @@ export function PlannerModule() {
   const [start, setStart] = useState("09:00");
   const [end, setEnd] = useState("10:00");
   const [type, setType] = useState<PlannerItem["type"]>("timeblock");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [storageWarning, setStorageWarning] = useState("");
 
   useEffect(() => {
     const s = loadPlannerState();
-    setView(s.view);
-    setSelectedDate(s.selectedDate);
-    setItems(s.items);
+    setView(s.state.view);
+    setSelectedDate(s.state.selectedDate);
+    setItems(s.state.items);
+    setStorageWarning(s.hadCorruption ? "Stored planner data was reset due to corruption." : "");
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -50,13 +56,18 @@ export function PlannerModule() {
   const filtered = items.filter((i) => i.dayKey === selectedDate).sort((a, b) => a.start.localeCompare(b.start));
 
   const addItem = () => {
-    if (!title.trim()) return;
-    setItems((prev) => [...prev, { id: crypto.randomUUID(), title: title.trim(), dayKey: selectedDate, start, end, type }]);
+    const t = title.trim();
+    if (!t) { setError("Title is required."); return; }
+    if (end <= start) { setError("End time must be after start time."); return; }
+    setError("");
+    setItems((prev) => [...prev, { id: createId("plan"), title: t, dayKey: selectedDate, start, end, type }]);
     setTitle("");
   };
 
   return (
     <section className="grid grid-cols-1 gap-4">
+      {loading ? <AppCard><p className="text-sm text-slate-300">Loading planner data...</p></AppCard> : null}
+      {storageWarning ? <AppCard><p className="text-sm text-amber-300">{storageWarning}</p></AppCard> : null}
       <AppCard>
         <SectionHeader title="Planner" icon={CalendarDays} />
         <div className="flex flex-wrap items-center gap-2">
@@ -80,6 +91,7 @@ export function PlannerModule() {
               <option value="routine">Routine</option>
               <option value="reminder">Reminder</option>
             </select>
+            {error ? <p className="text-xs text-rose-300">{error}</p> : null}
             <button onClick={addItem} className="h-10 w-full rounded-lg bg-blue-500/80 text-sm">Create Item</button>
           </div>
         </AppCard>

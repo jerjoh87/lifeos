@@ -26,18 +26,29 @@ export const defaultPlannerState: PlannerState = {
   ],
 };
 
-export function loadPlannerState(): PlannerState {
-  if (typeof window === "undefined") return defaultPlannerState;
+function normalize(state: PlannerState): PlannerState {
+  return {
+    view: state.view === "day" ? "day" : "week",
+    selectedDate: state.selectedDate || today,
+    items: Array.isArray(state.items)
+      ? state.items.map((i) => ({ ...i, title: String(i.title || "").trim() || "Untitled" }))
+      : [],
+  };
+}
+
+export function loadPlannerState(): { state: PlannerState; hadCorruption: boolean } {
+  if (typeof window === "undefined") return { state: defaultPlannerState, hadCorruption: false };
   try {
     const raw = localStorage.getItem(PLANNER_STORAGE_KEY);
-    if (!raw) return defaultPlannerState;
-    return { ...defaultPlannerState, ...JSON.parse(raw) };
+    if (!raw) return { state: defaultPlannerState, hadCorruption: false };
+    return { state: normalize({ ...defaultPlannerState, ...JSON.parse(raw) }), hadCorruption: false };
   } catch {
-    return defaultPlannerState;
+    localStorage.removeItem(PLANNER_STORAGE_KEY);
+    return { state: defaultPlannerState, hadCorruption: true };
   }
 }
 
 export function savePlannerState(state: PlannerState) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(PLANNER_STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(PLANNER_STORAGE_KEY, JSON.stringify(normalize(state)));
 }

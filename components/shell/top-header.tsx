@@ -8,10 +8,10 @@ export function TopHeader({ title }: { title: string }) {
         <h1 className="text-lg font-semibold tracking-tight text-slate-100">{title}</h1>
       </div>
       <div className="flex items-center gap-2">
-        <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-slate-300">
+        <button aria-label="Open search" className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-slate-300">
           <Search className="h-4 w-4" />
         </button>
-        <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-slate-300">
+        <button aria-label="Open notifications" className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-slate-300">
           <Bell className="h-4 w-4" />
         </button>
       </div>

@@ -25,18 +25,33 @@ export const defaultFinanceState: FinanceState = {
   ],
 };
 
-export function loadFinanceState(): FinanceState {
-  if (typeof window === "undefined") return defaultFinanceState;
+const n = (v: number, min = 0) => (Number.isFinite(v) ? Math.max(min, v) : min);
+
+function normalize(s: FinanceState): FinanceState {
+  return {
+    bills: Array.isArray(s.bills) ? s.bills.map((b) => ({ ...b, amount: n(b.amount), name: String(b.name || "").trim() || "Untitled Bill" })) : [],
+    subscriptions: Array.isArray(s.subscriptions)
+      ? s.subscriptions.map((x) => ({ ...x, amount: n(x.amount), name: String(x.name || "").trim() || "Untitled Subscription" }))
+      : [],
+    budgets: Array.isArray(s.budgets)
+      ? s.budgets.map((b) => ({ ...b, limit: n(b.limit, 1), spent: n(b.spent), name: String(b.name || "").trim() || "Untitled Category" }))
+      : [],
+  };
+}
+
+export function loadFinanceState(): { state: FinanceState; hadCorruption: boolean } {
+  if (typeof window === "undefined") return { state: defaultFinanceState, hadCorruption: false };
   try {
     const raw = localStorage.getItem(FINANCE_STORAGE_KEY);
-    if (!raw) return defaultFinanceState;
-    return { ...defaultFinanceState, ...JSON.parse(raw) };
+    if (!raw) return { state: defaultFinanceState, hadCorruption: false };
+    return { state: normalize({ ...defaultFinanceState, ...JSON.parse(raw) }), hadCorruption: false };
   } catch {
-    return defaultFinanceState;
+    localStorage.removeItem(FINANCE_STORAGE_KEY);
+    return { state: defaultFinanceState, hadCorruption: true };
   }
 }
 
 export function saveFinanceState(state: FinanceState) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(FINANCE_STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(FINANCE_STORAGE_KEY, JSON.stringify(normalize(state)));
 }
